@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/txtSelectPoll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select a Poll:"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingBottom="12dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerPolls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- 🔥 NEW: Poll status (Open / Closed) -->
+    <TextView
+        android:id="@+id/txtPollStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#D32F2F"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/txtOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Options:"
+        android:textSize="18sp"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroupOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/btnSubmitVote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Vote"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"/>
+
+</LinearLayout>

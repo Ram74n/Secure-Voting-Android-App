@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create a New Poll"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
+
+        <!-- Poll Question -->
+        <EditText
+            android:id="@+id/etPollQuestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Poll Question (required)"
+            android:padding="12dp" />
+
+        <!-- Option 1 -->
+        <EditText
+            android:id="@+id/etOption1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Option 1 (required)"
+            android:padding="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- Option 2 -->
+        <EditText
+            android:id="@+id/etOption2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Option 2 (required)"
+            android:padding="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- Option 3 -->
+        <EditText
+            android:id="@+id/etOption3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Option 3 (optional)"
+            android:padding="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- Option 4 -->
+        <EditText
+            android:id="@+id/etOption4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Option 4 (optional)"
+            android:padding="12dp"
+            android:layout_marginTop="12dp" />
+
+        <!-- Helper Text -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Polls are open by default\n• Only admins can create polls"
+            android:textSize="14sp"
+            android:paddingTop="16dp"
+            android:textColor="#666666" />
+
+        <!-- Create Poll Button -->
+        <Button
+            android:id="@+id/btnCreatePoll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Poll"
+            android:layout_marginTop="24dp" />
+
+    </LinearLayout>
+
+</ScrollView>

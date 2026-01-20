@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:paddingBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnCreatePoll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Poll" />
+
+    <!-- 🔒 ADMIN ONLY -->
+    <Button
+        android:id="@+id/btnClosePoll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close Poll (Admin)"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnViewPolls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Vote on Polls"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnViewResults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Results"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:layout_marginTop="24dp" />
+
+</LinearLayout>
