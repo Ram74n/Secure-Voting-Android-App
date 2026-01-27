@@ -31,7 +31,7 @@ public class CreatePollActivity extends AppCompatActivity {
         etOption1 = findViewById(R.id.etOption1);
         etOption2 = findViewById(R.id.etOption2);
         etOption3 = findViewById(R.id.etOption3);
-        etOption4 = findViewById(R.id.etOption4);
+
         btnCreatePoll = findViewById(R.id.btnCreatePoll);
 
         firestore = FirebaseFirestore.getInstance();

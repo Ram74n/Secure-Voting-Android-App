@@ -12,29 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SecureAppVoting">
 
-        <!-- Results Activity -->
+        <!-- SPLASH SCREEN (LAUNCHER) -->
         <activity
-            android:name=".activities.ResultsActivity"
-            android:exported="false" />
-
-        <!-- Create Poll Activity -->
-        <activity
-            android:name=".activities.CreatePollActivity"
-            android:exported="false" />
-
-        <!-- Voting Activity -->
-        <activity
-            android:name=".activities.VoteActivity"
-            android:exported="false" />
-
-        <!-- Dashboard Activity (after login) -->
-        <activity
-            android:name=".activities.DashboardActivity"
-            android:exported="false" />
-
-        <!-- Login Activity (Launcher) -->
-        <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,12 +22,37 @@
             </intent-filter>
         </activity>
 
-        <!-- Register Activity -->
+        <!-- LOGIN -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
+
+        <!-- REGISTER -->
         <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />
 
-        <!-- Main Activity (not used for launching) -->
+        <!-- DASHBOARD -->
+        <activity
+            android:name=".activities.DashboardActivity"
+            android:exported="false" />
+
+        <!-- CREATE POLL -->
+        <activity
+            android:name=".activities.CreatePollActivity"
+            android:exported="false" />
+
+        <!-- VOTE -->
+        <activity
+            android:name=".activities.VoteActivity"
+            android:exported="false" />
+
+        <!-- RESULTS -->
+        <activity
+            android:name=".activities.ResultsActivity"
+            android:exported="false" />
+
+        <!-- MAIN (NOT USED AS LAUNCHER) -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />

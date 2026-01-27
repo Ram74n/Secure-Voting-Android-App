@@ -25,30 +25,34 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // UI references
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnGoToRegister = findViewById(R.id.btnGoToRegister);
 
+        // Firebase
         mAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
+        // Login button
         btnLogin.setOnClickListener(v -> {
+
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this,
+                Toast.makeText(
+                        LoginActivity.this,
                         "Enter both email and password",
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT
+                ).show();
                 return;
             }
 
-            // 🔐 Firebase Authentication
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(authResult -> {
 
-                        // 🔎 Fetch user role from Firestore
                         firestore.collection("users")
                                 .document(email)
                                 .get()
@@ -71,22 +75,30 @@ public class LoginActivity extends AppCompatActivity {
                                     finish();
                                 })
                                 .addOnFailureListener(e ->
-                                        Toast.makeText(this,
+                                        Toast.makeText(
+                                                LoginActivity.this,
                                                 "Failed to load user role",
-                                                Toast.LENGTH_SHORT).show()
+                                                Toast.LENGTH_SHORT
+                                        ).show()
                                 );
                     })
                     .addOnFailureListener(e ->
-                            Toast.makeText(this,
-                                    "Login Failed: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                    LoginActivity.this,
+                                    "Login failed: " + e.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show()
                     );
         });
 
-        btnGoToRegister.setOnClickListener(v -> {
-            startActivity(
-                    new Intent(LoginActivity.this, RegisterActivity.class)
-            );
-        });
+        // Register button
+        btnGoToRegister.setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                LoginActivity.this,
+                                RegisterActivity.class
+                        )
+                )
+        );
     }
 }

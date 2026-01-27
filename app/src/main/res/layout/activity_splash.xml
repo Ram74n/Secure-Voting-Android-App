@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/bradford_blue">
+
+    <!-- University of Bradford Logo -->
+    <ImageView
+        android:id="@+id/imgBradfordLogo"
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:src="@drawable/bradford_logo_blue"
+        android:contentDescription="University of Bradford Logo"
+        android:scaleType="fitCenter" />
+
+    <!-- Optional subtitle (looks professional) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Secure Voting Application"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:letterSpacing="0.05" />
+
+</LinearLayout>

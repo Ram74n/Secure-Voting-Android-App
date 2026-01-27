@@ -1,9 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SecureAppVoting" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Theme.SecureAppVoting"
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <!-- Primary colours -->
+        <item name="colorPrimary">@color/bradford_blue</item>
+        <item name="colorPrimaryVariant">@color/bradford_blue_dark</item>
+        <item name="colorSecondary">@color/bradford_gold</item>
+
+        <!-- App background -->
+        <item name="android:windowBackground">@color/background_main</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/bradford_blue_dark</item>
+
+        <!-- Text colours -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
     </style>
 
-    <style name="Theme.SecureAppVoting" parent="Base.Theme.SecureAppVoting" />
 </resources>
