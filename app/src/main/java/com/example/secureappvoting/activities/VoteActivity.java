@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -13,20 +12,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.secureappvoting.R;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class VoteActivity extends AppCompatActivity {
 
     private Spinner spinnerPolls;
-    private TextView txtOptions;
+    private TextView txtOptions, txtPollStatus;
     private RadioGroup radioGroupOptions;
-    private Button btnSubmitVote;
+    private MaterialButton btnSubmitVote;
+    private MaterialCardView cardOptions;
 
     private FirebaseFirestore firestore;
 
@@ -34,7 +35,9 @@ public class VoteActivity extends AppCompatActivity {
     private final ArrayList<String> pollIds = new ArrayList<>();
 
     private String userEmail;
+    private String userRole = "user"; // default safety
     private boolean hasVoted = false;
+    private String selectedPollId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,63 +46,60 @@ public class VoteActivity extends AppCompatActivity {
 
         spinnerPolls = findViewById(R.id.spinnerPolls);
         txtOptions = findViewById(R.id.txtOptions);
+        txtPollStatus = findViewById(R.id.txtPollStatus);
         radioGroupOptions = findViewById(R.id.radioGroupOptions);
         btnSubmitVote = findViewById(R.id.btnSubmitVote);
+        cardOptions = findViewById(R.id.cardOptions);
 
         firestore = FirebaseFirestore.getInstance();
 
         userEmail = getIntent().getStringExtra("email");
-        if (userEmail == null) userEmail = "anonymous";
+        String roleExtra = getIntent().getStringExtra("role");
+        if (roleExtra != null) userRole = roleExtra;
 
-        hideVoteUI();
+        resetUI();
         loadPolls();
 
-        spinnerPolls.setOnItemSelectedListener(
-                new android.widget.AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(android.widget.AdapterView<?> parent,
-                                               View view,
-                                               int position,
-                                               long id) {
+        spinnerPolls.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
 
-                        if (position < pollIds.size()) {
-                            hideVoteUI();
-                            hasVoted = false;
+                if (position < pollIds.size()) {
+                    resetUI();
+                    selectedPollId = pollIds.get(position);
 
-                            String pollId = pollIds.get(position);
-                            loadOptions(pollId);
-                            checkIfUserVoted(pollId);
-                        }
+                    // 👤 Only normal users are restricted
+                    if (!"admin".equals(userRole)) {
+                        checkIfUserVoted(selectedPollId);
                     }
 
-                    @Override
-                    public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-                });
-
-        btnSubmitVote.setOnClickListener(v -> {
-            if (!hasVoted) {
-                submitVote();
+                    loadOptions(selectedPollId);
+                }
             }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
+
+        btnSubmitVote.setOnClickListener(v -> submitVote());
     }
 
-    // ---------------- UI HELPERS ----------------
-    private void hideVoteUI() {
-        radioGroupOptions.removeAllViews();
-        radioGroupOptions.setVisibility(View.GONE);
+    // ================= UI RESET =================
+    private void resetUI() {
         txtOptions.setVisibility(View.GONE);
+        txtPollStatus.setVisibility(View.GONE);
+        cardOptions.setVisibility(View.GONE);
+        radioGroupOptions.setVisibility(View.GONE);
+        radioGroupOptions.removeAllViews();
+
         btnSubmitVote.setVisibility(View.GONE);
         btnSubmitVote.setEnabled(true);
         btnSubmitVote.setAlpha(1f);
+
+        hasVoted = false;
     }
 
-    private void showVoteUI() {
-        txtOptions.setVisibility(View.VISIBLE);
-        radioGroupOptions.setVisibility(View.VISIBLE);
-        btnSubmitVote.setVisibility(View.VISIBLE);
-    }
-
-    // ---------------- LOAD POLLS ----------------
+    // ================= LOAD POLLS =================
     private void loadPolls() {
         firestore.collection("polls")
                 .whereEqualTo("isOpen", true)
@@ -110,18 +110,8 @@ public class VoteActivity extends AppCompatActivity {
                     pollIds.clear();
 
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        String question = doc.getString("question");
-                        if (question != null) {
-                            pollIds.add(doc.getId());
-                            pollTitles.add(question);
-                        }
-                    }
-
-                    if (pollTitles.isEmpty()) {
-                        pollTitles.add("No polls available");
-                        spinnerPolls.setEnabled(false);
-                    } else {
-                        spinnerPolls.setEnabled(true);
+                        pollTitles.add(doc.getString("question"));
+                        pollIds.add(doc.getId());
                     }
 
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -129,42 +119,26 @@ public class VoteActivity extends AppCompatActivity {
                             android.R.layout.simple_spinner_item,
                             pollTitles
                     );
-                    adapter.setDropDownViewResource(
-                            android.R.layout.simple_spinner_dropdown_item
-                    );
-
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerPolls.setAdapter(adapter);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Failed to load polls",
-                                Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 
-    // ---------------- LOAD OPTIONS ----------------
+    // ================= LOAD OPTIONS =================
     private void loadOptions(String pollId) {
         firestore.collection("polls")
                 .document(pollId)
                 .get()
                 .addOnSuccessListener(doc -> {
 
-                    if (!doc.exists()) {
-                        Toast.makeText(this,
-                                "Poll not found",
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
                     List<String> options = (List<String>) doc.get("options");
+                    if (options == null || options.isEmpty()) return;
 
-                    if (options == null || options.isEmpty()) {
-                        txtOptions.setText("No options available");
-                        txtOptions.setVisibility(View.VISIBLE);
-                        return;
-                    }
+                    txtOptions.setVisibility(View.VISIBLE);
+                    cardOptions.setVisibility(View.VISIBLE);
+                    radioGroupOptions.setVisibility(View.VISIBLE);
+                    btnSubmitVote.setVisibility(View.VISIBLE);
 
-                    showVoteUI();
                     radioGroupOptions.removeAllViews();
 
                     for (String option : options) {
@@ -173,82 +147,67 @@ public class VoteActivity extends AppCompatActivity {
                         rb.setId(View.generateViewId());
                         radioGroupOptions.addView(rb);
                     }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Failed to load options",
-                                Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 
-    // ---------------- CHECK DUPLICATE VOTE ----------------
+    // ================= CHECK USER VOTE =================
     private void checkIfUserVoted(String pollId) {
-        firestore.collection("votes")
-                .whereEqualTo("pollId", pollId)
-                .whereEqualTo("userEmail", userEmail)
+        firestore.collection("users")
+                .document(userEmail)
                 .get()
-                .addOnSuccessListener(snapshot -> {
-
-                    if (!snapshot.isEmpty()) {
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists() && Boolean.TRUE.equals(doc.getBoolean("hasVoted"))) {
                         hasVoted = true;
                         btnSubmitVote.setEnabled(false);
                         btnSubmitVote.setAlpha(0.4f);
-                        txtOptions.setText("You have already voted in this poll");
-                        txtOptions.setVisibility(View.VISIBLE);
+                        txtPollStatus.setText("You have already voted in this poll");
+                        txtPollStatus.setVisibility(View.VISIBLE);
                     }
                 });
     }
 
-    // ---------------- SUBMIT VOTE ----------------
+    // ================= SUBMIT VOTE =================
     private void submitVote() {
-
-        btnSubmitVote.setEnabled(false); // 🔒 immediate lock
-        btnSubmitVote.setAlpha(0.4f);
 
         int selectedId = radioGroupOptions.getCheckedRadioButtonId();
         if (selectedId == -1) {
-            Toast.makeText(this,
-                    "Please select an option",
-                    Toast.LENGTH_SHORT).show();
-            btnSubmitVote.setEnabled(true);
-            btnSubmitVote.setAlpha(1f);
+            Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int position = spinnerPolls.getSelectedItemPosition();
-        if (position >= pollIds.size()) return;
-
-        String pollId = pollIds.get(position);
-        String pollTitle = pollTitles.get(position);
-
         RadioButton selectedRadio = findViewById(selectedId);
-        if (selectedRadio == null) return;
-
         String selectedOption = selectedRadio.getText().toString();
 
-        Map<String, Object> voteData = new HashMap<>();
-        voteData.put("pollId", pollId);
-        voteData.put("pollTitle", pollTitle);
-        voteData.put("option", selectedOption);
-        voteData.put("userEmail", userEmail);
-        voteData.put("timestamp", System.currentTimeMillis());
+        firestore.collection("polls")
+                .document(selectedPollId)
+                .update("votes." + selectedOption, FieldValue.increment(1))
+                .addOnSuccessListener(unused -> {
 
-        firestore.collection("votes")
-                .add(voteData)
-                .addOnSuccessListener(doc -> {
-                    hasVoted = true;
-                    radioGroupOptions.clearCheck();
+                    // 👤 Normal users: lock after voting
+                    if (!"admin".equals(userRole)) {
+                        firestore.collection("users")
+                                .document(userEmail)
+                                .update(
+                                        "hasVoted", true,
+                                        "votedPollId", selectedPollId
+                                );
 
-                    Toast.makeText(this,
-                            "Vote submitted successfully!",
-                            Toast.LENGTH_SHORT).show();
+                        hasVoted = true;
+                        btnSubmitVote.setEnabled(false);
+                        btnSubmitVote.setAlpha(0.4f);
+                    } else {
+                        // 👑 Admin stays unlocked (demo mode)
+                        btnSubmitVote.setEnabled(true);
+                        btnSubmitVote.setAlpha(1f);
+                    }
+
+                    txtPollStatus.setText("Vote recorded successfully");
+                    txtPollStatus.setVisibility(View.VISIBLE);
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this,
-                            "Failed to submit vote",
-                            Toast.LENGTH_SHORT).show();
-                    btnSubmitVote.setEnabled(true);
-                    btnSubmitVote.setAlpha(1f);
-                });
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Vote failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
     }
 }

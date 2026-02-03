@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header with Logo -->
+        <!-- ===== HEADER ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -20,7 +20,6 @@
             android:layout_marginBottom="32dp">
 
             <ImageView
-                android:id="@+id/imgUniversityLogo"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:src="@drawable/uni_bradford_logo"
@@ -28,29 +27,29 @@
                 android:layout_marginEnd="16dp" />
 
             <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/tvWelcome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Welcome, User"
+                    android:text="Welcome"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="@color/text_primary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Secure Voting Platform"
+                    android:text="Secure Voting Dashboard"
                     android:textSize="14sp"
-                    android:textColor="@color/text_secondary" />
+                    android:textColor="@color/text_secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Stats Cards -->
+        <!-- ===== STATS ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,31 +62,31 @@
                 android:layout_height="100dp"
                 android:layout_weight="1"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="6dp"
                 app:cardBackgroundColor="#E3E8FF"
                 android:layout_marginEnd="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5"
+                        android:id="@+id/tvActivePolls"
+                        android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/bradford_blue" />
+                        android:textColor="@color/bradford_blue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:text="Active Polls"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textColor="@color/text_secondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -97,123 +96,91 @@
                 android:layout_height="100dp"
                 android:layout_weight="1"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="6dp"
                 app:cardBackgroundColor="#FFF8E1"
                 android:layout_marginStart="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="16dp">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3"
+                        android:id="@+id/tvVotesCast"
+                        android:text="0"
                         android:textSize="28sp"
                         android:textStyle="bold"
-                        android:textColor="@color/bradford_gold" />
+                        android:textColor="@color/bradford_gold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:text="Votes Cast"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textColor="@color/text_secondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Action Buttons -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Quick Actions"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Create Poll -->
+        <!-- ===== ACTIONS ===== -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCreatePoll"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Create New Poll"
+            android:text="Create Poll"
             android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            android:paddingStart="24dp"
+            app:cornerRadius="14dp"
             app:backgroundTint="@color/bradford_blue"
-            android:layout_marginBottom="16dp" />
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
 
-        <!-- Close Poll -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClosePoll"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Close Active Poll"
+            android:text="Close Poll (Admin)"
             android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/bradford_blue_dark"
+            app:cornerRadius="14dp"
             app:strokeWidth="2dp"
+            app:strokeColor="@color/bradford_blue_dark"
             android:textColor="@color/bradford_blue_dark"
             app:backgroundTint="@android:color/transparent"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="12dp" />
 
-        <!-- Vote on Polls -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewPolls"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Vote on Polls"
             android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
+            app:cornerRadius="14dp"
             app:backgroundTint="@color/bradford_gold"
             android:textColor="@android:color/black"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="12dp" />
 
-        <!-- View Results -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnViewResults"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="View Results"
             android:textAllCaps="false"
-            android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/bradford_green"
+            app:cornerRadius="14dp"
             app:strokeWidth="2dp"
+            app:strokeColor="@color/bradford_green"
             android:textColor="@color/bradford_green"
             app:backgroundTint="@android:color/transparent"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="20dp" />
 
-        <!-- Logout -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:text="Logout"
-            android:textSize="16sp"
-            android:backgroundTint="#D32F2F"
             android:textColor="@android:color/white"
-            app:cornerRadius="12dp" />
-
-        <!-- Footer -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Secure Voting System"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="32dp" />
+            android:backgroundTint="#D32F2F" />
 
     </LinearLayout>
 </ScrollView>

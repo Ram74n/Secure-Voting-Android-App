@@ -36,6 +36,14 @@ public class ResultsActivity extends AppCompatActivity {
     private final ArrayList<String> pollTitles = new ArrayList<>();
     private final ArrayList<String> pollIds = new ArrayList<>();
 
+    // 🎓 University of Bradford themed colours
+    private final int[] BRADFORD_COLORS = new int[]{
+            Color.parseColor("#003A8F"), // Bradford Blue
+            Color.parseColor("#F5B700"), // Gold
+            Color.parseColor("#002B6B"),
+            Color.parseColor("#6B6B6B")
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +60,7 @@ public class ResultsActivity extends AppCompatActivity {
 
         spinnerResultsPolls.setOnItemSelectedListener(
                 new android.widget.AdapterView.OnItemSelectedListener() {
+
                     @Override
                     public void onItemSelected(android.widget.AdapterView<?> parent,
                                                View view, int position, long id) {
@@ -70,8 +79,13 @@ public class ResultsActivity extends AppCompatActivity {
     private void setupChart() {
         pieChart.setUsePercentValues(false);
         pieChart.getDescription().setEnabled(false);
-        pieChart.setDrawHoleEnabled(false);
+        pieChart.setDrawHoleEnabled(true);
+        pieChart.setHoleRadius(45f);
+        pieChart.setTransparentCircleRadius(50f);
+        pieChart.setCenterText("Poll Results");
+        pieChart.setCenterTextSize(16f);
         pieChart.setEntryLabelTextSize(12f);
+        pieChart.setNoDataText("Select a poll to view results");
     }
 
     // ---------------- LOAD POLLS ----------------
@@ -102,7 +116,8 @@ public class ResultsActivity extends AppCompatActivity {
                             pollTitles
                     );
                     adapter.setDropDownViewResource(
-                            android.R.layout.simple_spinner_dropdown_item);
+                            android.R.layout.simple_spinner_dropdown_item
+                    );
 
                     spinnerResultsPolls.setAdapter(adapter);
                 })
@@ -147,10 +162,12 @@ public class ResultsActivity extends AppCompatActivity {
 
                                 if (snapshot == null || error != null) return;
 
+                                // Reset counts
                                 for (String key : voteCount.keySet()) {
                                     voteCount.put(key, 0);
                                 }
 
+                                // Count votes
                                 for (DocumentSnapshot vote : snapshot) {
                                     String selectedOption = vote.getString("option");
                                     if (selectedOption != null &&
@@ -176,8 +193,11 @@ public class ResultsActivity extends AppCompatActivity {
         boolean hasVotes = false;
 
         for (Map.Entry<String, Integer> entry : voteCount.entrySet()) {
+
             entries.add(new PieEntry(entry.getValue(), entry.getKey()));
-            resultText.append(entry.getKey())
+
+            resultText.append("• ")
+                    .append(entry.getKey())
                     .append(": ")
                     .append(entry.getValue())
                     .append(" votes\n");
@@ -195,16 +215,14 @@ public class ResultsActivity extends AppCompatActivity {
             return;
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Poll Results");
-        dataSet.setColors(new int[]{
-                Color.rgb(244, 67, 54),
-                Color.rgb(76, 175, 80),
-                Color.rgb(33, 150, 243),
-                Color.rgb(255, 193, 7)
-        });
+        PieDataSet dataSet = new PieDataSet(entries, "Votes");
+        dataSet.setColors(BRADFORD_COLORS);
+        dataSet.setValueTextSize(14f);
+        dataSet.setValueTextColor(Color.WHITE);
 
         PieData data = new PieData(dataSet);
         pieChart.setData(data);
+        pieChart.animateY(1200);
         pieChart.invalidate();
     }
 

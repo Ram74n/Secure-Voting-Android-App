@@ -3,23 +3,19 @@ package com.example.secureappvoting.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.secureappvoting.R;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText etRegEmail, etRegPassword, etRegConfirmPassword;
-    private Button btnRegisterUser;
+    private TextInputEditText etRegEmail, etRegPassword, etRegConfirmPassword;
+    private MaterialButton btnRegisterUser;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,54 +28,40 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegisterUser = findViewById(R.id.btnRegisterUser);
 
         mAuth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
 
-        btnRegisterUser.setOnClickListener(v -> {
-            String email = etRegEmail.getText().toString().trim();
-            String pass = etRegPassword.getText().toString();
-            String confirm = etRegConfirmPassword.getText().toString();
-
-            // Validate fields
-            if (email.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
-                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (!pass.equals(confirm)) {
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (pass.length() < 6) {
-                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Firebase Registration
-            mAuth.createUserWithEmailAndPassword(email, pass)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
-
-                            // OPTIONAL: Save user to Firestore (helps for report)
-                            saveUserToFirestore(email);
-
-                            finish(); // Return to login
-                        } else {
-                            Toast.makeText(this, "Registration failed: " +
-                                    task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-        });
+        btnRegisterUser.setOnClickListener(v -> attemptRegistration());
     }
 
-    private void saveUserToFirestore(String email) {
-        HashMap<String, Object> userMap = new HashMap<>();
-        userMap.put("email", email);
-        userMap.put("registeredAt", System.currentTimeMillis());
+    private void attemptRegistration() {
 
-        firestore.collection("users")
-                .document(email)
-                .set(userMap);
+        String email = etRegEmail.getText() != null ? etRegEmail.getText().toString().trim() : "";
+        String password = etRegPassword.getText() != null ? etRegPassword.getText().toString() : "";
+        String confirmPassword = etRegConfirmPassword.getText() != null ? etRegConfirmPassword.getText().toString() : "";
+
+        if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (password.length() < 6) {
+            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Registration failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show()
+                );
     }
 }

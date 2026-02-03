@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ===== HEADER / HERO ===== -->
+        <!-- ===== HEADER ===== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Administrator Panel"
+                    android:text="Administrative Controls"
                     android:textSize="14sp"
                     android:textColor="@color/text_secondary" />
             </LinearLayout>
@@ -62,7 +62,7 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <!-- Section: Question -->
+                <!-- Poll Question -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -78,6 +78,8 @@
                     android:layout_height="wrap_content"
                     android:hint="e.g. Should lectures be recorded?"
                     android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
                     android:backgroundTint="@color/bradford_blue"
                     android:layout_marginBottom="28dp" />
 
@@ -88,7 +90,7 @@
                     android:background="#E0E0E0"
                     android:layout_marginBottom="24dp" />
 
-                <!-- Section: Options -->
+                <!-- Options -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -104,6 +106,9 @@
                     android:layout_height="wrap_content"
                     android:hint="Option 1"
                     android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:backgroundTint="@color/bradford_blue"
                     android:layout_marginBottom="12dp" />
 
                 <EditText
@@ -112,6 +117,9 @@
                     android:layout_height="wrap_content"
                     android:hint="Option 2"
                     android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:backgroundTint="@color/bradford_blue"
                     android:layout_marginBottom="12dp" />
 
                 <EditText
@@ -120,18 +128,21 @@
                     android:layout_height="wrap_content"
                     android:hint="Option 3 (optional)"
                     android:padding="14dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_secondary"
+                    android:backgroundTint="@color/bradford_blue"
                     android:layout_marginBottom="32dp" />
 
                 <!-- Info -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="• Minimum 2 options required\n• Poll will be live immediately"
+                    android:text="• Minimum 2 options required\n• Poll becomes live immediately"
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:layout_marginBottom="24dp" />
 
-                <!-- CTA - Fixed: Removed the icon reference -->
+                <!-- CTA -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCreatePoll"
                     android:layout_width="match_parent"
@@ -139,12 +150,10 @@
                     android:text="Publish Poll"
                     android:textAllCaps="false"
                     android:textSize="16sp"
+                    android:letterSpacing="0.05"
                     app:cornerRadius="16dp"
                     app:backgroundTint="@color/bradford_blue"
                     android:textColor="@android:color/white" />
-                <!-- Removed: app:icon="@drawable/ic_add" -->
-                <!-- Removed: app:iconGravity="textStart" -->
-                <!-- Removed: app:iconPadding="12dp" -->
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

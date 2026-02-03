@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- University of Bradford colour palette -->
+    <!-- University of Bradford palette -->
     <color name="bradford_blue">#003A8F</color>
     <color name="bradford_blue_dark">#002B6B</color>
     <color name="bradford_gold">#F5B700</color>
+    <color name="bradford_green">#2E7D32</color>
 
     <!-- Backgrounds -->
     <color name="background_main">#F5F7FA</color>
 
-    <!-- Cards / surfaces -->
+    <!-- Cards -->
     <color name="card_white">#FFFFFF</color>
     <color name="card_background">#FFFFFF</color>
 
-    <!-- Text colours -->
+    <!-- Text -->
     <color name="text_primary">#1F1F1F</color>
     <color name="text_secondary">#6B6B6B</color>
-
-    <!-- Success / positive actions -->
-    <color name="bradford_green">#2E7D32</color>
-
 
 </resources>

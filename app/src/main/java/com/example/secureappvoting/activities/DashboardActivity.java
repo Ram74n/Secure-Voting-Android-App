@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private TextView tvWelcome;
+    private TextView tvWelcome, tvActivePolls, tvVotesCast;
     private Button btnCreatePoll, btnViewPolls, btnViewResults, btnLogout, btnClosePoll;
 
     private String userEmail;
@@ -30,7 +30,11 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        // ----- UI -----
         tvWelcome = findViewById(R.id.tvWelcome);
+        tvActivePolls = findViewById(R.id.tvActivePolls);
+        tvVotesCast = findViewById(R.id.tvVotesCast);
+
         btnCreatePoll = findViewById(R.id.btnCreatePoll);
         btnViewPolls = findViewById(R.id.btnViewPolls);
         btnViewResults = findViewById(R.id.btnViewResults);
@@ -39,27 +43,27 @@ public class DashboardActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
 
+        // ----- USER INFO -----
         userEmail = getIntent().getStringExtra("email");
         if (userEmail == null) userEmail = "User";
 
         tvWelcome.setText("Welcome, " + userEmail);
 
-        // 🔥 NEW: Load role from Firestore
+        // ----- LOAD DATA -----
         loadUserRole();
+        loadDashboardStats();
 
-        // ---- VOTE ----
+        // ----- BUTTON ACTIONS -----
         btnViewPolls.setOnClickListener(v -> {
-            Intent i = new Intent(this, VoteActivity.class);
-            i.putExtra("email", userEmail);
-            startActivity(i);
+            Intent intent = new Intent(this, VoteActivity.class);
+            intent.putExtra("email", userEmail);
+            startActivity(intent);
         });
 
-        // ---- RESULTS ----
         btnViewResults.setOnClickListener(v ->
                 startActivity(new Intent(this, ResultsActivity.class))
         );
 
-        // ---- LOGOUT ----
         btnLogout.setOnClickListener(v -> {
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -68,7 +72,7 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-    // ---------------- LOAD USER ROLE ----------------
+    // ================= LOAD USER ROLE =================
     private void loadUserRole() {
 
         firestore.collection("users")
@@ -78,10 +82,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                     if (doc.exists()) {
                         String role = doc.getString("role");
-
-                        if ("admin".equalsIgnoreCase(role)) {
-                            isAdmin = true;
-                        }
+                        isAdmin = "admin".equalsIgnoreCase(role);
                     }
 
                     applyRolePermissions();
@@ -94,7 +95,7 @@ public class DashboardActivity extends AppCompatActivity {
                 });
     }
 
-    // ---------------- APPLY ROLE PERMISSIONS ----------------
+    // ================= APPLY ROLE PERMISSIONS =================
     private void applyRolePermissions() {
 
         if (!isAdmin) {
@@ -105,7 +106,6 @@ public class DashboardActivity extends AppCompatActivity {
             btnClosePoll.setAlpha(0.4f);
         }
 
-        // ---- CREATE POLL ----
         btnCreatePoll.setOnClickListener(v -> {
             if (!isAdmin) {
                 Toast.makeText(this,
@@ -116,14 +116,31 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(new Intent(this, CreatePollActivity.class));
         });
 
-        // ---- CLOSE POLL ----
         btnClosePoll.setOnClickListener(v -> {
-            if (!isAdmin) return;
-            showClosePollDialog();
+            if (isAdmin) {
+                showClosePollDialog();
+            }
         });
     }
 
-    // ---------------- CLOSE POLL DIALOG ----------------
+    // ================= DASHBOARD STATS =================
+    private void loadDashboardStats() {
+
+        firestore.collection("polls")
+                .whereEqualTo("isOpen", true)
+                .get()
+                .addOnSuccessListener(snapshot ->
+                        tvActivePolls.setText(String.valueOf(snapshot.size()))
+                );
+
+        firestore.collection("votes")
+                .get()
+                .addOnSuccessListener(snapshot ->
+                        tvVotesCast.setText(String.valueOf(snapshot.size()))
+                );
+    }
+
+    // ================= CLOSE POLL DIALOG =================
     private void showClosePollDialog() {
 
         firestore.collection("polls")
