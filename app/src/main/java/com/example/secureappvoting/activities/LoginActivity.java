@@ -57,43 +57,34 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
 
+                    // 🔑 ROLE RULE
                     final String role = email.contains("@admin") ? "admin" : "user";
+
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("email", email);
+                    userData.put("role", role);
+
+                    // 👤 ONLY normal users track voting state
+                    if (!"admin".equals(role)) {
+                        userData.put("votedPollId", null);
+                    }
 
                     firestore.collection("users")
                             .document(email)
-                            .get()
-                            .addOnSuccessListener(doc -> {
+                            .set(userData)
+                            .addOnSuccessListener(unused -> {
 
-                                Map<String, Object> userData = new HashMap<>();
-                                userData.put("email", email);
-                                userData.put("role", role);
-
-                                if (doc.exists()) {
-                                    if (doc.getBoolean("hasVoted") != null)
-                                        userData.put("hasVoted", doc.getBoolean("hasVoted"));
-                                    if (doc.getString("votedPollId") != null)
-                                        userData.put("votedPollId", doc.getString("votedPollId"));
+                                Intent i;
+                                if ("admin".equals(role)) {
+                                    i = new Intent(this, DashboardActivity.class);
                                 } else {
-                                    userData.put("hasVoted", false);
+                                    i = new Intent(this, VoteActivity.class);
                                 }
 
-                                firestore.collection("users")
-                                        .document(email)
-                                        .set(userData)
-                                        .addOnSuccessListener(unused -> {
-
-                                            Intent i;
-                                            if ("admin".equals(role)) {
-                                                i = new Intent(this, DashboardActivity.class);
-                                            } else {
-                                                i = new Intent(this, VoteActivity.class);
-                                            }
-
-                                            i.putExtra("email", email);
-                                            i.putExtra("role", role);
-                                            startActivity(i);
-                                            finish();
-                                        });
+                                i.putExtra("email", email);
+                                i.putExtra("role", role);
+                                startActivity(i);
+                                finish();
                             });
                 })
                 .addOnFailureListener(e ->

@@ -34,9 +34,7 @@ public class VoteActivity extends AppCompatActivity {
     private final ArrayList<String> pollTitles = new ArrayList<>();
     private final ArrayList<String> pollIds = new ArrayList<>();
 
-    private String userEmail;
-    private String userRole = "user"; // default safety
-    private boolean hasVoted = false;
+    private String userRole = "user";
     private String selectedPollId;
 
     @Override
@@ -53,7 +51,6 @@ public class VoteActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
 
-        userEmail = getIntent().getStringExtra("email");
         String roleExtra = getIntent().getStringExtra("role");
         if (roleExtra != null) userRole = roleExtra;
 
@@ -67,12 +64,6 @@ public class VoteActivity extends AppCompatActivity {
                 if (position < pollIds.size()) {
                     resetUI();
                     selectedPollId = pollIds.get(position);
-
-                    // 👤 Only normal users are restricted
-                    if (!"admin".equals(userRole)) {
-                        checkIfUserVoted(selectedPollId);
-                    }
-
                     loadOptions(selectedPollId);
                 }
             }
@@ -84,10 +75,11 @@ public class VoteActivity extends AppCompatActivity {
         btnSubmitVote.setOnClickListener(v -> submitVote());
     }
 
-    // ================= UI RESET =================
     private void resetUI() {
         txtOptions.setVisibility(View.GONE);
         txtPollStatus.setVisibility(View.GONE);
+        txtPollStatus.setText("");
+
         cardOptions.setVisibility(View.GONE);
         radioGroupOptions.setVisibility(View.GONE);
         radioGroupOptions.removeAllViews();
@@ -95,11 +87,8 @@ public class VoteActivity extends AppCompatActivity {
         btnSubmitVote.setVisibility(View.GONE);
         btnSubmitVote.setEnabled(true);
         btnSubmitVote.setAlpha(1f);
-
-        hasVoted = false;
     }
 
-    // ================= LOAD POLLS =================
     private void loadPolls() {
         firestore.collection("polls")
                 .whereEqualTo("isOpen", true)
@@ -124,7 +113,6 @@ public class VoteActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= LOAD OPTIONS =================
     private void loadOptions(String pollId) {
         firestore.collection("polls")
                 .document(pollId)
@@ -150,23 +138,6 @@ public class VoteActivity extends AppCompatActivity {
                 });
     }
 
-    // ================= CHECK USER VOTE =================
-    private void checkIfUserVoted(String pollId) {
-        firestore.collection("users")
-                .document(userEmail)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists() && Boolean.TRUE.equals(doc.getBoolean("hasVoted"))) {
-                        hasVoted = true;
-                        btnSubmitVote.setEnabled(false);
-                        btnSubmitVote.setAlpha(0.4f);
-                        txtPollStatus.setText("You have already voted in this poll");
-                        txtPollStatus.setVisibility(View.VISIBLE);
-                    }
-                });
-    }
-
-    // ================= SUBMIT VOTE =================
     private void submitVote() {
 
         int selectedId = radioGroupOptions.getCheckedRadioButtonId();
@@ -183,25 +154,17 @@ public class VoteActivity extends AppCompatActivity {
                 .update("votes." + selectedOption, FieldValue.increment(1))
                 .addOnSuccessListener(unused -> {
 
-                    // 👤 Normal users: lock after voting
-                    if (!"admin".equals(userRole)) {
-                        firestore.collection("users")
-                                .document(userEmail)
-                                .update(
-                                        "hasVoted", true,
-                                        "votedPollId", selectedPollId
-                                );
-
-                        hasVoted = true;
-                        btnSubmitVote.setEnabled(false);
-                        btnSubmitVote.setAlpha(0.4f);
-                    } else {
-                        // 👑 Admin stays unlocked (demo mode)
+                    // 👑 ADMIN: unlimited voting, no locks, no messages
+                    if ("admin".equals(userRole)) {
                         btnSubmitVote.setEnabled(true);
                         btnSubmitVote.setAlpha(1f);
+                        return;
                     }
 
-                    txtPollStatus.setText("Vote recorded successfully");
+                    // 👤 USER: one vote per poll (UI lock only)
+                    btnSubmitVote.setEnabled(false);
+                    btnSubmitVote.setAlpha(0.4f);
+                    txtPollStatus.setText("You have already voted in this poll");
                     txtPollStatus.setVisibility(View.VISIBLE);
                 })
                 .addOnFailureListener(e ->

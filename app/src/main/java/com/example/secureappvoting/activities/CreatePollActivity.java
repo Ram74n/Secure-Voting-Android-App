@@ -12,7 +12,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CreatePollActivity extends AppCompatActivity {
 
@@ -45,42 +47,68 @@ public class CreatePollActivity extends AppCompatActivity {
         String op3 = etOption3.getText().toString().trim();
 
         if (question.isEmpty() || op1.isEmpty() || op2.isEmpty()) {
-            Toast.makeText(this,
+            Toast.makeText(
+                    this,
                     "Poll question and at least two options are required",
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
-        ArrayList<String> options = new ArrayList<>();
-        options.add(op1);
-        options.add(op2);
-        if (!op3.isEmpty()) options.add(op3);
+        // ✅ Prevent duplicate options
+        Set<String> uniqueOptions = new HashSet<>();
+        uniqueOptions.add(op1);
+        uniqueOptions.add(op2);
+        if (!op3.isEmpty()) uniqueOptions.add(op3);
 
-        // 🔥 AUTO CREATE VOTES MAP
+        if (uniqueOptions.size() < 2) {
+            Toast.makeText(
+                    this,
+                    "Options must be different",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        ArrayList<String> options = new ArrayList<>(uniqueOptions);
+
+        // 🔥 AUTO CREATE VOTES MAP (CRITICAL FIX)
         Map<String, Object> votes = new HashMap<>();
         for (String option : options) {
             votes.put(option, 0);
         }
 
+        // ✅ Poll object
         Map<String, Object> poll = new HashMap<>();
         poll.put("question", question);
         poll.put("options", options);
-        poll.put("votes", votes);
+        poll.put("votes", votes);        // 🔑 REQUIRED for voting
         poll.put("isOpen", true);
         poll.put("createdAt", System.currentTimeMillis());
 
         firestore.collection("polls")
                 .add(poll)
                 .addOnSuccessListener(doc -> {
-                    Toast.makeText(this,
+                    Toast.makeText(
+                            this,
                             "Poll published successfully",
-                            Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    // 🔄 Clear form (demo friendly)
+                    etPollQuestion.setText("");
+                    etOption1.setText("");
+                    etOption2.setText("");
+                    etOption3.setText("");
+
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
+                        Toast.makeText(
+                                this,
                                 "Error: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show()
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
     }
 }

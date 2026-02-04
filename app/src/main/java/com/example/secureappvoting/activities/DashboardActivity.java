@@ -21,7 +21,7 @@ public class DashboardActivity extends AppCompatActivity {
     private Button btnCreatePoll, btnViewPolls, btnViewResults, btnLogout, btnClosePoll;
 
     private String userEmail;
-    private boolean isAdmin = false;
+    private String userRole = "user";   // 🔑 STORE ROLE PROPERLY
 
     private FirebaseFirestore firestore;
 
@@ -49,7 +49,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         tvWelcome.setText("Welcome, " + userEmail);
 
-        // ----- LOAD DATA -----
+        // ----- LOAD ROLE & STATS -----
         loadUserRole();
         loadDashboardStats();
 
@@ -57,6 +57,7 @@ public class DashboardActivity extends AppCompatActivity {
         btnViewPolls.setOnClickListener(v -> {
             Intent intent = new Intent(this, VoteActivity.class);
             intent.putExtra("email", userEmail);
+            intent.putExtra("role", userRole);   // 🔥 THIS FIXES EVERYTHING
             startActivity(intent);
         });
 
@@ -82,7 +83,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                     if (doc.exists()) {
                         String role = doc.getString("role");
-                        isAdmin = "admin".equalsIgnoreCase(role);
+                        if (role != null) userRole = role;
                     }
 
                     applyRolePermissions();
@@ -98,7 +99,7 @@ public class DashboardActivity extends AppCompatActivity {
     // ================= APPLY ROLE PERMISSIONS =================
     private void applyRolePermissions() {
 
-        if (!isAdmin) {
+        if (!"admin".equalsIgnoreCase(userRole)) {
             btnCreatePoll.setEnabled(false);
             btnCreatePoll.setAlpha(0.4f);
 
@@ -107,7 +108,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         btnCreatePoll.setOnClickListener(v -> {
-            if (!isAdmin) {
+            if (!"admin".equalsIgnoreCase(userRole)) {
                 Toast.makeText(this,
                         "Only administrators can create polls.",
                         Toast.LENGTH_SHORT).show();
@@ -117,7 +118,7 @@ public class DashboardActivity extends AppCompatActivity {
         });
 
         btnClosePoll.setOnClickListener(v -> {
-            if (isAdmin) {
+            if ("admin".equalsIgnoreCase(userRole)) {
                 showClosePollDialog();
             }
         });

@@ -7,10 +7,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.secureappvoting.R;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -21,6 +19,7 @@ public class AdminResultsActivity extends AppCompatActivity {
 
     private Spinner spinnerPolls;
     private TextView txtResults;
+
     private FirebaseFirestore firestore;
 
     private final ArrayList<String> pollTitles = new ArrayList<>();
@@ -36,36 +35,19 @@ public class AdminResultsActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
 
-        verifyAdminAndLoad();
-    }
+        loadPolls();
 
-    // ================= ADMIN CHECK =================
-    private void verifyAdminAndLoad() {
-        String email = FirebaseAuth.getInstance().getCurrentUser() != null
-                ? FirebaseAuth.getInstance().getCurrentUser().getEmail()
-                : null;
+        spinnerPolls.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (position < pollIds.size()) {
+                    loadResults(pollIds.get(position));
+                }
+            }
 
-        if (email == null) {
-            finish();
-            return;
-        }
-
-        firestore.collection("users")
-                .document(email)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    String role = doc.getString("role");
-
-                    if (!"admin".equals(role)) {
-                        Toast.makeText(this,
-                                "Access denied",
-                                Toast.LENGTH_SHORT).show();
-                        finish();
-                        return;
-                    }
-
-                    loadPolls();
-                });
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
     }
 
     // ================= LOAD POLLS =================
@@ -78,8 +60,8 @@ public class AdminResultsActivity extends AppCompatActivity {
                     pollIds.clear();
 
                     for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        pollIds.add(doc.getId());
                         pollTitles.add(doc.getString("question"));
+                        pollIds.add(doc.getId());
                     }
 
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -87,29 +69,8 @@ public class AdminResultsActivity extends AppCompatActivity {
                             android.R.layout.simple_spinner_item,
                             pollTitles
                     );
-                    adapter.setDropDownViewResource(
-                            android.R.layout.simple_spinner_dropdown_item
-                    );
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spinnerPolls.setAdapter(adapter);
-
-                    spinnerPolls.setOnItemSelectedListener(
-                            new android.widget.AdapterView.OnItemSelectedListener() {
-                                @Override
-                                public void onItemSelected(
-                                        android.widget.AdapterView<?> parent,
-                                        View view,
-                                        int position,
-                                        long id
-                                ) {
-                                    if (position < pollIds.size()) {
-                                        loadResults(pollIds.get(position));
-                                    }
-                                }
-
-                                @Override
-                                public void onNothingSelected(
-                                        android.widget.AdapterView<?> parent) {}
-                            });
                 });
     }
 
@@ -122,20 +83,18 @@ public class AdminResultsActivity extends AppCompatActivity {
 
                     if (!doc.exists()) return;
 
-                    Map<String, Long> votes =
-                            (Map<String, Long>) doc.get("votes");
-
+                    Map<String, Long> votes = (Map<String, Long>) doc.get("votes");
                     StringBuilder results = new StringBuilder();
 
-                    if (votes == null || votes.isEmpty()) {
-                        results.append("No votes yet.");
-                    } else {
+                    if (votes != null && !votes.isEmpty()) {
                         for (String option : votes.keySet()) {
                             results.append(option)
                                     .append(": ")
                                     .append(votes.get(option))
                                     .append(" votes\n");
                         }
+                    } else {
+                        results.append("No votes yet.");
                     }
 
                     txtResults.setText(results.toString());
