@@ -131,7 +131,39 @@
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_secondary"
                     android:backgroundTint="@color/bradford_blue"
-                    android:layout_marginBottom="32dp" />
+                    android:layout_marginBottom="24dp" />
+
+                <!-- ===== DEADLINE SECTION ===== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Voting Deadline (optional)"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvDeadline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No deadline set"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:padding="12dp"
+                    android:background="@drawable/bg_outline"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSetDeadline"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Set Deadline"
+                    android:textAllCaps="false"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/bradford_blue"
+                    android:textColor="@android:color/white"
+                    android:layout_marginBottom="24dp" />
 
                 <!-- Info -->
                 <TextView

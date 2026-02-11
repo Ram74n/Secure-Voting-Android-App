@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
@@ -11,40 +10,48 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SecureAppVoting">
-        <activity
-            android:name=".activities.AdminResultsActivity"
-            android:exported="false" />
+
         <!-- SPLASH SCREEN (LAUNCHER) -->
         <activity
             android:name=".activities.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- LOGIN -->
+        </activity>
+
+        <!-- AUTH -->
         <activity
             android:name=".activities.LoginActivity"
-            android:exported="false" /> <!-- REGISTER -->
+            android:exported="false" />
+
         <activity
             android:name=".activities.RegisterActivity"
-            android:exported="false" /> <!-- DASHBOARD -->
+            android:exported="false" />
+
+        <!-- DASHBOARDS -->
         <activity
             android:name=".activities.DashboardActivity"
-            android:exported="false" /> <!-- CREATE POLL -->
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.UserDashboardActivity"
+            android:exported="false" />
+
+        <!-- POLLS -->
         <activity
             android:name=".activities.CreatePollActivity"
-            android:exported="false" /> <!-- VOTE -->
+            android:exported="false" />
+
         <activity
             android:name=".activities.VoteActivity"
-            android:exported="false" /> <!-- RESULTS -->
+            android:exported="false" />
+
         <activity
             android:name=".activities.ResultsActivity"
-            android:exported="false" /> <!-- MAIN (NOT USED AS LAUNCHER) -->
-        <activity
-            android:name=".MainActivity"
             android:exported="false" />
+
     </application>
 
 </manifest>

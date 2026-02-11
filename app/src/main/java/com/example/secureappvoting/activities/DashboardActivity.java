@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -21,7 +22,7 @@ public class DashboardActivity extends AppCompatActivity {
     private Button btnCreatePoll, btnViewPolls, btnViewResults, btnLogout, btnClosePoll;
 
     private String userEmail;
-    private String userRole = "user";   // 🔑 STORE ROLE PROPERLY
+    private String userRole = "user";
 
     private FirebaseFirestore firestore;
 
@@ -30,7 +31,6 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // ----- UI -----
         tvWelcome = findViewById(R.id.tvWelcome);
         tvActivePolls = findViewById(R.id.tvActivePolls);
         tvVotesCast = findViewById(R.id.tvVotesCast);
@@ -43,22 +43,19 @@ public class DashboardActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
 
-        // ----- USER INFO -----
         userEmail = getIntent().getStringExtra("email");
         if (userEmail == null) userEmail = "User";
 
         tvWelcome.setText("Welcome, " + userEmail);
 
-        // ----- LOAD ROLE & STATS -----
         loadUserRole();
         loadDashboardStats();
 
-        // ----- BUTTON ACTIONS -----
         btnViewPolls.setOnClickListener(v -> {
-            Intent intent = new Intent(this, VoteActivity.class);
-            intent.putExtra("email", userEmail);
-            intent.putExtra("role", userRole);   // 🔥 THIS FIXES EVERYTHING
-            startActivity(intent);
+            Intent i = new Intent(this, VoteActivity.class);
+            i.putExtra("email", userEmail);
+            i.putExtra("role", userRole);
+            startActivity(i);
         });
 
         btnViewResults.setOnClickListener(v ->
@@ -66,37 +63,27 @@ public class DashboardActivity extends AppCompatActivity {
         );
 
         btnLogout.setOnClickListener(v -> {
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            Intent i = new Intent(this, LoginActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
             finish();
         });
     }
 
-    // ================= LOAD USER ROLE =================
+    // ================= LOAD ROLE =================
     private void loadUserRole() {
-
         firestore.collection("users")
                 .document(userEmail)
                 .get()
                 .addOnSuccessListener(doc -> {
-
-                    if (doc.exists()) {
-                        String role = doc.getString("role");
-                        if (role != null) userRole = role;
+                    if (doc.exists() && doc.getString("role") != null) {
+                        userRole = doc.getString("role");
                     }
-
-                    applyRolePermissions();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this,
-                            "Failed to load user role",
-                            Toast.LENGTH_SHORT).show();
                     applyRolePermissions();
                 });
     }
 
-    // ================= APPLY ROLE PERMISSIONS =================
+    // ================= ROLE PERMISSIONS =================
     private void applyRolePermissions() {
 
         if (!"admin".equalsIgnoreCase(userRole)) {
@@ -127,6 +114,7 @@ public class DashboardActivity extends AppCompatActivity {
     // ================= DASHBOARD STATS =================
     private void loadDashboardStats() {
 
+        // Active polls
         firestore.collection("polls")
                 .whereEqualTo("isOpen", true)
                 .get()
@@ -134,14 +122,29 @@ public class DashboardActivity extends AppCompatActivity {
                         tvActivePolls.setText(String.valueOf(snapshot.size()))
                 );
 
-        firestore.collection("votes")
+        // ✅ TOTAL VOTES (from polls.votes map)
+        firestore.collection("polls")
                 .get()
-                .addOnSuccessListener(snapshot ->
-                        tvVotesCast.setText(String.valueOf(snapshot.size()))
-                );
+                .addOnSuccessListener(snapshot -> {
+
+                    int totalVotes = 0;
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        Map<String, Long> votes =
+                                (Map<String, Long>) doc.get("votes");
+
+                        if (votes != null) {
+                            for (Long count : votes.values()) {
+                                totalVotes += count;
+                            }
+                        }
+                    }
+
+                    tvVotesCast.setText(String.valueOf(totalVotes));
+                });
     }
 
-    // ================= CLOSE POLL DIALOG =================
+    // ================= CLOSE POLL =================
     private void showClosePollDialog() {
 
         firestore.collection("polls")
@@ -168,17 +171,14 @@ public class DashboardActivity extends AppCompatActivity {
                     builder.setTitle("Close a Poll");
 
                     builder.setItems(pollTitles.toArray(new String[0]),
-                            (dialog, which) -> {
-
-                                firestore.collection("polls")
-                                        .document(pollIds.get(which))
-                                        .update("isOpen", false)
-                                        .addOnSuccessListener(unused ->
-                                                Toast.makeText(this,
-                                                        "Poll closed successfully",
-                                                        Toast.LENGTH_SHORT).show()
-                                        );
-                            });
+                            (dialog, which) -> firestore.collection("polls")
+                                    .document(pollIds.get(which))
+                                    .update("isOpen", false)
+                                    .addOnSuccessListener(unused ->
+                                            Toast.makeText(this,
+                                                    "Poll closed successfully",
+                                                    Toast.LENGTH_SHORT).show()
+                                    ));
 
                     builder.show();
                 });

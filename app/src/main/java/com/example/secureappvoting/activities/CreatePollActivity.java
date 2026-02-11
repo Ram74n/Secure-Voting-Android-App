@@ -2,15 +2,19 @@ package com.example.secureappvoting.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.secureappvoting.R;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,9 +23,13 @@ import java.util.Set;
 public class CreatePollActivity extends AppCompatActivity {
 
     private EditText etPollQuestion, etOption1, etOption2, etOption3;
-    private Button btnCreatePoll;
+    private Button btnCreatePoll, btnSetDeadline;
+    private TextView tvDeadline;
 
     private FirebaseFirestore firestore;
+
+    // ⏰ Deadline (null if not set)
+    private Long deadlineAt = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +42,50 @@ public class CreatePollActivity extends AppCompatActivity {
         etOption3 = findViewById(R.id.etOption3);
         btnCreatePoll = findViewById(R.id.btnCreatePoll);
 
+        btnSetDeadline = findViewById(R.id.btnSetDeadline);
+        tvDeadline = findViewById(R.id.tvDeadline);
+
         firestore = FirebaseFirestore.getInstance();
 
+        btnSetDeadline.setOnClickListener(v -> pickDeadline());
         btnCreatePoll.setOnClickListener(v -> createPoll());
     }
 
+    // ===================== DEADLINE PICKER =====================
+    private void pickDeadline() {
+
+        Calendar calendar = Calendar.getInstance();
+
+        new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+
+                    new TimePickerDialog(
+                            this,
+                            (timeView, hourOfDay, minute) -> {
+
+                                Calendar deadline = Calendar.getInstance();
+                                deadline.set(year, month, dayOfMonth, hourOfDay, minute, 0);
+                                deadlineAt = deadline.getTimeInMillis();
+
+                                tvDeadline.setText(
+                                        "Deadline: " + dayOfMonth + "/"
+                                                + (month + 1) + "/" + year
+                                                + " " + String.format("%02d:%02d", hourOfDay, minute)
+                                );
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            true
+                    ).show();
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        ).show();
+    }
+
+    // ===================== CREATE POLL =====================
     private void createPoll() {
 
         String question = etPollQuestion.getText().toString().trim();
@@ -72,19 +119,25 @@ public class CreatePollActivity extends AppCompatActivity {
 
         ArrayList<String> options = new ArrayList<>(uniqueOptions);
 
-        // 🔥 AUTO CREATE VOTES MAP (CRITICAL FIX)
+        // 🔥 Auto-create votes map
         Map<String, Object> votes = new HashMap<>();
         for (String option : options) {
             votes.put(option, 0);
         }
 
-        // ✅ Poll object
+        // ✅ FINAL poll structure (CONSISTENT)
         Map<String, Object> poll = new HashMap<>();
         poll.put("question", question);
         poll.put("options", options);
-        poll.put("votes", votes);        // 🔑 REQUIRED for voting
+        poll.put("votes", votes);
         poll.put("isOpen", true);
         poll.put("createdAt", System.currentTimeMillis());
+
+        // 🔑 ALWAYS present (null if not set)
+        poll.put("deadlineAt", deadlineAt);
+
+        // Optional but very good design
+        poll.put("status", deadlineAt == null ? "open" : "scheduled");
 
         firestore.collection("polls")
                 .add(poll)
@@ -95,11 +148,13 @@ public class CreatePollActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT
                     ).show();
 
-                    // 🔄 Clear form (demo friendly)
+                    // Reset form
                     etPollQuestion.setText("");
                     etOption1.setText("");
                     etOption2.setText("");
                     etOption3.setText("");
+                    tvDeadline.setText("No deadline set");
+                    deadlineAt = null;
 
                     finish();
                 })

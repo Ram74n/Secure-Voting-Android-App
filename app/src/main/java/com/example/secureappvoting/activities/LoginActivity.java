@@ -37,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
 
         btnLogin.setOnClickListener(v -> attemptLogin());
+
         btnGoToRegister.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class))
         );
@@ -44,53 +45,71 @@ public class LoginActivity extends AppCompatActivity {
 
     private void attemptLogin() {
 
-        String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
-        String password = etPassword.getText() != null ? etPassword.getText().toString() : "";
+        String email = etEmail.getText() != null
+                ? etEmail.getText().toString().trim()
+                : "";
+
+        String password = etPassword.getText() != null
+                ? etPassword.getText().toString()
+                : "";
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this,
+            Toast.makeText(
+                    this,
                     "Please enter both email and password",
-                    Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
 
-                    // 🔑 ROLE RULE
+                    // 🔑 ROLE RULE (simple demo logic)
                     final String role = email.contains("@admin") ? "admin" : "user";
-
-                    Map<String, Object> userData = new HashMap<>();
-                    userData.put("email", email);
-                    userData.put("role", role);
-
-                    // 👤 ONLY normal users track voting state
-                    if (!"admin".equals(role)) {
-                        userData.put("votedPollId", null);
-                    }
 
                     firestore.collection("users")
                             .document(email)
-                            .set(userData)
-                            .addOnSuccessListener(unused -> {
+                            .get()
+                            .addOnSuccessListener(doc -> {
 
-                                Intent i;
-                                if ("admin".equals(role)) {
-                                    i = new Intent(this, DashboardActivity.class);
-                                } else {
-                                    i = new Intent(this, VoteActivity.class);
+                                // ✅ Create Firestore user ONLY if it doesn't exist
+                                if (!doc.exists()) {
+                                    Map<String, Object> userData = new HashMap<>();
+                                    userData.put("email", email);
+                                    userData.put("role", role);
+
+                                    // Only normal users track voting
+                                    if (!"admin".equals(role)) {
+                                        userData.put("votedPollId", null);
+                                    }
+
+                                    firestore.collection("users")
+                                            .document(email)
+                                            .set(userData);
                                 }
 
-                                i.putExtra("email", email);
-                                i.putExtra("role", role);
-                                startActivity(i);
+                                // ✅ Route user correctly
+                                Intent intent;
+                                if ("admin".equals(role)) {
+                                    intent = new Intent(this, DashboardActivity.class);
+                                } else {
+                                    intent = new Intent(this, UserDashboardActivity.class);
+                                }
+
+                                intent.putExtra("email", email);
+                                intent.putExtra("role", role);
+
+                                startActivity(intent);
                                 finish();
                             });
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this,
+                        Toast.makeText(
+                                this,
                                 "Login failed: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show()
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
     }
 }

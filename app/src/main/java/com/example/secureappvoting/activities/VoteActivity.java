@@ -24,7 +24,7 @@ import java.util.List;
 public class VoteActivity extends AppCompatActivity {
 
     private Spinner spinnerPolls;
-    private TextView txtOptions, txtPollStatus;
+    private TextView txtOptions, txtPollStatus, tvDeadlineStatus;
     private RadioGroup radioGroupOptions;
     private MaterialButton btnSubmitVote;
     private MaterialCardView cardOptions;
@@ -45,6 +45,7 @@ public class VoteActivity extends AppCompatActivity {
         spinnerPolls = findViewById(R.id.spinnerPolls);
         txtOptions = findViewById(R.id.txtOptions);
         txtPollStatus = findViewById(R.id.txtPollStatus);
+        tvDeadlineStatus = findViewById(R.id.tvDeadlineStatus);
         radioGroupOptions = findViewById(R.id.radioGroupOptions);
         btnSubmitVote = findViewById(R.id.btnSubmitVote);
         cardOptions = findViewById(R.id.cardOptions);
@@ -57,41 +58,44 @@ public class VoteActivity extends AppCompatActivity {
         resetUI();
         loadPolls();
 
-        spinnerPolls.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+        spinnerPolls.setOnItemSelectedListener(
+                new android.widget.AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(android.widget.AdapterView<?> parent,
+                                               View view, int position, long id) {
 
-                if (position < pollIds.size()) {
-                    resetUI();
-                    selectedPollId = pollIds.get(position);
-                    loadOptions(selectedPollId);
-                }
-            }
+                        if (position < pollIds.size()) {
+                            resetUI();
+                            selectedPollId = pollIds.get(position);
+                            checkPollStatusAndLoad(selectedPollId);
+                        }
+                    }
 
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
+                    @Override
+                    public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+                });
 
         btnSubmitVote.setOnClickListener(v -> submitVote());
     }
 
+    // ================= UI RESET =================
     private void resetUI() {
         txtOptions.setVisibility(View.GONE);
         txtPollStatus.setVisibility(View.GONE);
-        txtPollStatus.setText("");
+        tvDeadlineStatus.setVisibility(View.GONE);
 
-        cardOptions.setVisibility(View.GONE);
-        radioGroupOptions.setVisibility(View.GONE);
+        txtPollStatus.setText("");
         radioGroupOptions.removeAllViews();
 
+        cardOptions.setVisibility(View.GONE);
         btnSubmitVote.setVisibility(View.GONE);
         btnSubmitVote.setEnabled(true);
         btnSubmitVote.setAlpha(1f);
     }
 
+    // ================= LOAD POLLS =================
     private void loadPolls() {
         firestore.collection("polls")
-                .whereEqualTo("isOpen", true)
                 .get()
                 .addOnSuccessListener(snapshot -> {
 
@@ -108,12 +112,77 @@ public class VoteActivity extends AppCompatActivity {
                             android.R.layout.simple_spinner_item,
                             pollTitles
                     );
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    adapter.setDropDownViewResource(
+                            android.R.layout.simple_spinner_dropdown_item
+                    );
                     spinnerPolls.setAdapter(adapter);
                 });
     }
 
+    // ================= TRAFFIC LIGHT LOGIC =================
+    private void checkPollStatusAndLoad(String pollId) {
+
+        firestore.collection("polls")
+                .document(pollId)
+                .get()
+                .addOnSuccessListener(doc -> {
+
+                    if (!doc.exists()) return;
+
+                    Long deadlineAt = doc.getLong("deadlineAt");
+                    boolean isOpen = Boolean.TRUE.equals(doc.getBoolean("isOpen"));
+                    long now = System.currentTimeMillis();
+
+                    tvDeadlineStatus.setVisibility(View.VISIBLE);
+
+                    // 🔴 DEADLINE PASSED
+                    if (deadlineAt != null && now >= deadlineAt) {
+
+                        firestore.collection("polls")
+                                .document(pollId)
+                                .update("isOpen", false);
+
+                        tvDeadlineStatus.setText("🔴 Voting closed");
+                        tvDeadlineStatus.setTextColor(
+                                getResources().getColor(android.R.color.holo_red_dark)
+                        );
+
+                        txtPollStatus.setText("This poll is closed");
+                        txtPollStatus.setVisibility(View.VISIBLE);
+                        return;
+                    }
+
+                    // 🟡 CLOSING SOON (last 30 minutes)
+                    if (deadlineAt != null && deadlineAt - now <= 30 * 60 * 1000) {
+
+                        tvDeadlineStatus.setText("🟡 Closing soon");
+                        tvDeadlineStatus.setTextColor(
+                                getResources().getColor(android.R.color.holo_orange_dark)
+                        );
+                    }
+
+                    // 🟢 OPEN
+                    if (deadlineAt == null || deadlineAt - now > 30 * 60 * 1000) {
+
+                        tvDeadlineStatus.setText("🟢 Voting open");
+                        tvDeadlineStatus.setTextColor(
+                                getResources().getColor(android.R.color.holo_green_dark)
+                        );
+                    }
+
+                    if (!isOpen) {
+                        txtPollStatus.setText("Voting is closed");
+                        txtPollStatus.setVisibility(View.VISIBLE);
+                        return;
+                    }
+
+                    loadOptions(pollId);
+                });
+    }
+
+    // ================= LOAD OPTIONS =================
     private void loadOptions(String pollId) {
+
         firestore.collection("polls")
                 .document(pollId)
                 .get()
@@ -124,7 +193,6 @@ public class VoteActivity extends AppCompatActivity {
 
                     txtOptions.setVisibility(View.VISIBLE);
                     cardOptions.setVisibility(View.VISIBLE);
-                    radioGroupOptions.setVisibility(View.VISIBLE);
                     btnSubmitVote.setVisibility(View.VISIBLE);
 
                     radioGroupOptions.removeAllViews();
@@ -138,11 +206,14 @@ public class VoteActivity extends AppCompatActivity {
                 });
     }
 
+    // ================= SUBMIT VOTE =================
     private void submitVote() {
 
         int selectedId = radioGroupOptions.getCheckedRadioButtonId();
         if (selectedId == -1) {
-            Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Please select an option",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -154,23 +225,12 @@ public class VoteActivity extends AppCompatActivity {
                 .update("votes." + selectedOption, FieldValue.increment(1))
                 .addOnSuccessListener(unused -> {
 
-                    // 👑 ADMIN: unlimited voting, no locks, no messages
-                    if ("admin".equals(userRole)) {
-                        btnSubmitVote.setEnabled(true);
-                        btnSubmitVote.setAlpha(1f);
-                        return;
+                    if (!"admin".equals(userRole)) {
+                        btnSubmitVote.setEnabled(false);
+                        btnSubmitVote.setAlpha(0.4f);
+                        txtPollStatus.setText("You have already voted");
+                        txtPollStatus.setVisibility(View.VISIBLE);
                     }
-
-                    // 👤 USER: one vote per poll (UI lock only)
-                    btnSubmitVote.setEnabled(false);
-                    btnSubmitVote.setAlpha(0.4f);
-                    txtPollStatus.setText("You have already voted in this poll");
-                    txtPollStatus.setVisibility(View.VISIBLE);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Vote failed: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show()
-                );
+                });
     }
 }

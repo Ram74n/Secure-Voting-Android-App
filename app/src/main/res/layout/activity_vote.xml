@@ -58,6 +58,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
+                <!-- Poll closed / voted status -->
                 <TextView
                     android:id="@+id/txtPollStatus"
                     android:layout_width="wrap_content"
@@ -66,6 +67,16 @@
                     android:textStyle="bold"
                     android:textColor="#D32F2F"
                     android:layout_marginTop="12dp"
+                    android:visibility="gone" />
+
+                <!-- 🚦 Deadline / traffic-light status -->
+                <TextView
+                    android:id="@+id/tvDeadlineStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -99,7 +110,6 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- IMPORTANT: no visibility control here -->
                 <RadioGroup
                     android:id="@+id/radioGroupOptions"
                     android:layout_width="match_parent"
@@ -108,7 +118,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 🔥 SUBMIT BUTTON (ALWAYS ENABLED BY DEFAULT) -->
+        <!-- Submit Vote -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSubmitVote"
             android:layout_width="match_parent"
@@ -121,10 +131,9 @@
             app:cornerRadius="16dp"
             app:backgroundTint="@color/bradford_blue"
             android:elevation="6dp"
+            android:visibility="gone"
             android:enabled="true"
-            android:clickable="true"
-            android:alpha="1.0"
-            android:visibility="visible" />
+            android:alpha="1.0" />
 
         <!-- Footer -->
         <TextView
